@@ -4,6 +4,7 @@ import java.awt.EventQueue;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,6 +20,7 @@ import javax.swing.table.DefaultTableModel;
 import LeituraArquivos.BuscaArquivos;
 import Model.Logs;
 import Model.Transponder;
+import View.TabInfoLog;
 import View.TabInfoTranspoder;
 import img.logo;
 
@@ -45,6 +47,14 @@ import java.awt.Color;
 import javax.swing.JMenuBar;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
+import com.jgoodies.forms.layout.FormLayout;
+import com.jgoodies.forms.layout.ColumnSpec;
+import com.jgoodies.forms.layout.FormSpecs;
+import com.jgoodies.forms.layout.RowSpec;
+
+import DB.DataBase;
+import DB.Pastas;
+import javax.swing.ImageIcon;
 
 public class VSTransponder {
 
@@ -79,6 +89,8 @@ public class VSTransponder {
 	private JScrollPane scrollPane_1;
 	private JTable tbLogs;
 	private JPanel panel_4;
+	private JPanel panel_5;
+	private JLabel lblNewLabel;
 	/**
 	 * Launch the application.
 	 */
@@ -119,6 +131,7 @@ public class VSTransponder {
 	 * Create the application.
 	 */
 	public VSTransponder() {
+		
 		initialize();
 	}
 
@@ -126,44 +139,16 @@ public class VSTransponder {
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		
-		
-		BuscaArquivos busca = new BuscaArquivos();
-		this.LOG = busca.BuscarArquivo();
-		
-		
-		
+
 		frmVstransponderValerianosystem = new JFrame();
 		frmVstransponderValerianosystem.setIconImage(Toolkit.getDefaultToolkit().getImage(VSTransponder.class.getResource("/img/NOVA LOGO(SEM FUNDO).png")));
 		frmVstransponderValerianosystem.setTitle("VSTransponder  -  ValerianoSystem");
 		frmVstransponderValerianosystem.setBounds(100, 100, 1065, 339);
 		frmVstransponderValerianosystem.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
 		frmVstransponderValerianosystem.setExtendedState(JFrame.MAXIMIZED_BOTH);
 		
-		int numTrans = this.LOG.getTranspodersLidos().size();
-		int numlogs  = this.LOG.getLogs().size();
-		int numLeituras = this.LOG.getTotalLeituras();
-	
-		
-		scrollPane_1 = new JScrollPane();
-		frmVstransponderValerianosystem.getContentPane().add(scrollPane_1, BorderLayout.EAST);
-		
-		tbLogs = new JTable();
-		tbLogs.setModel(new DefaultTableModel(
-			new Object[][] {
-				{null, null},
-			},
-			new String[] {
-				"Nome do Log", "Quantidade Leituras"
-			}
-		));
-		tbLogs.getColumnModel().getColumn(0).setPreferredWidth(87);
-		tbLogs.getColumnModel().getColumn(1).setPreferredWidth(123);
-		scrollPane_1.setViewportView(tbLogs);
-		
 		panel_4 = new JPanel();
-		frmVstransponderValerianosystem.getContentPane().add(panel_4, BorderLayout.CENTER);
+		frmVstransponderValerianosystem.getContentPane().add(panel_4, BorderLayout.WEST);
 		panel_4.setLayout(new BorderLayout(0, 0));
 		
 		scrollPane = new JScrollPane();
@@ -206,7 +191,7 @@ public class VSTransponder {
 		panel.add(lblNLogs);
 		
 		NumLogs = new JTextField();
-		NumLogs.setText(String.valueOf(numlogs));
+		NumLogs.setText("0");
 		NumLogs.setFont(new Font("Tahoma", Font.PLAIN, 21));
 		NumLogs.setEditable(false);
 		NumLogs.setColumns(5);
@@ -218,7 +203,7 @@ public class VSTransponder {
 		panel.add(lblNumeroTransponders);
 		
 		NumTrans = new JTextField();
-		NumTrans.setText(String.valueOf(numTrans));
+		NumTrans.setText("0");
 		NumTrans.setFont(new Font("Tahoma", Font.PLAIN, 21));
 		NumTrans.setEditable(false);
 		NumTrans.setColumns(5);
@@ -229,7 +214,7 @@ public class VSTransponder {
 		panel.add(lblNLeituras);
 		
 		NumLeitura = new JTextField();
-		NumLeitura.setText(String.valueOf(numLeituras));
+		NumLeitura.setText("0");
 		NumLeitura.setFont(new Font("Tahoma", Font.PLAIN, 21));
 		NumLeitura.setEditable(false);
 		NumLeitura.setColumns(5);
@@ -237,6 +222,7 @@ public class VSTransponder {
 		
 		panel_1 = new JPanel();
 		panel_4.add(panel_1, BorderLayout.SOUTH);
+		panel_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
 		
 		panel_3 = new JPanel();
 		panel_3.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
@@ -255,7 +241,7 @@ public class VSTransponder {
 		
 		FiltroKm = new JTextField();
 		FiltroKm.setEditable(false);
-		FiltroKm.setColumns(10);
+		FiltroKm.setColumns(5);
 		panel_3.add(FiltroKm);
 		
 		lblPerodometros = new JLabel("Periodo (Metros):");
@@ -263,17 +249,14 @@ public class VSTransponder {
 		
 		KmPeriodo = new JTextField();
 		KmPeriodo.setEditable(false);
-		KmPeriodo.setColumns(10);
+		KmPeriodo.setColumns(5);
 		panel_3.add(KmPeriodo);
 		lblTipo = new JLabel("Tipo de Transponder: ");
 		panel_1.add(lblTipo);
 		
 		TipoTransponder = new JComboBox();
 		
-				TipoTransponder.addItem("TODOS");
-				for(String tipo : this.LOG.getTipoTransponders()) {
-					TipoTransponder.addItem(tipo);
-				}
+
 				panel_1.add(TipoTransponder);
 				
 				panel_2 = new JPanel();
@@ -294,7 +277,7 @@ public class VSTransponder {
 				NumMinLeitura = new JTextField();
 				NumMinLeitura.setEditable(false);
 				panel_2.add(NumMinLeitura);
-				NumMinLeitura.setColumns(10);
+				NumMinLeitura.setColumns(3);
 				
 
 				
@@ -311,9 +294,56 @@ public class VSTransponder {
 				
 				TipoTransponder.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
-						PesquisarTrans();
+						if(TipoTransponder.getSelectedItem() != null)
+								PesquisarTrans();
 					}
 				});
+				
+				panel_5 = new JPanel();
+				frmVstransponderValerianosystem.getContentPane().add(panel_5, BorderLayout.CENTER);
+				panel_5.setLayout(new BorderLayout(0, 0));
+				
+				
+				scrollPane_1 = new JScrollPane();
+				panel_5.add(scrollPane_1);
+				
+				tbLogs = new JTable();
+				tbLogs.setModel(new DefaultTableModel(
+					new Object[][] {
+						{null, null, null},
+					},
+					new String[] {
+						"Nome do Log", "N\u00FAmero de Transponders", "Quantidade Leituras","Possível Perda"
+					}
+				) {
+					boolean[] columnEditables = new boolean[] {
+						false, false, false
+					};
+					public boolean isCellEditable(int row, int column) {
+						return columnEditables[column];
+					}
+				});
+				tbLogs.getColumnModel().getColumn(0).setPreferredWidth(87);
+				tbLogs.getColumnModel().getColumn(1).setPreferredWidth(123);
+				tbLogs.addMouseListener(new MouseAdapter() {
+					@Override
+					public void mouseClicked(MouseEvent arg0) {
+						String log = tbLogs.getValueAt(tbLogs.getSelectedRow(), 0).toString();
+						
+						try {
+							TabInfoLog dialog =  new TabInfoLog(LOG, log);
+							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+							dialog.setVisible(true);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				scrollPane_1.setViewportView(tbLogs);
+				
+				lblNewLabel = new JLabel("");
+				lblNewLabel.setIcon(new ImageIcon(VSTransponder.class.getResource("/img/NOVA LOGO(SEM FUNDO).png")));
+				panel_5.add(lblNewLabel, BorderLayout.SOUTH);
 		
 		menuBar = new JMenuBar();
 		frmVstransponderValerianosystem.setJMenuBar(menuBar);
@@ -326,16 +356,25 @@ public class VSTransponder {
 			public void actionPerformed(ActionEvent arg0) {
 				BuscaArquivos busca = new BuscaArquivos();
 				LOG = busca.BuscarArquivo();
-				int numlogs  = LOG.getLogs().size();
-				NumLogs.setText(String.valueOf(numlogs));
-				PesquisarTrans();
-				setTbLogs(LOG);
+				if(LOG != null) {
+						int numlogs  = LOG.getLogs().size();
+						NumLogs.setText(String.valueOf(numlogs));
+						TipoTransponder.removeAllItems();
+						TipoTransponder.addItem("TODOS");
+						for(String tipo : LOG.getTipoTransponders()) {
+							TipoTransponder.addItem(tipo);
+						}
+						
+						PesquisarTrans();
+						setTbLogs(LOG);
+						int numNovostransponders =  LOG.getNewTranspoderBDs().size();
+						JOptionPane.showMessageDialog(null, numNovostransponders + " Transponder(s) Novos Encontrados.");
+				}
 			}
 		});
 		mnNewMenu.add(mntmImportarLogs);
-		
-		setTbTransponder (this.LOG);
-		setTbLogs(this.LOG);
+
+	
 	}
 	private Boolean isNumero(String texto) {
 		
@@ -396,6 +435,9 @@ public class VSTransponder {
             modeloTable.removeRow(0);
         }
         
+ 
+        
+        
         if(logs != null){
 	        for (String t : logs.getTranspodersLidos()) {
 			         String trans[] = t.split(" - ");
@@ -423,7 +465,6 @@ public class VSTransponder {
 			        	 		 numTrans++;
 			        	 		 numLeituras =  numLeituras + leituras;
 			        	 	
-			        	 		 
 						         modeloTable.addRow(new Object[] { trans[0],
 						        		                           trans[1],
 						        		                          leituras
@@ -441,18 +482,44 @@ public class VSTransponder {
         DefaultTableModel modeloTable = (DefaultTableModel) tbLogs.getModel();
         
         
-        Map<String, Integer> qtd = log.getQuantidadeLeiturasPorLogs();
+        Map<String, Integer> qtdLeitura = log.getQuantidadeLeiturasPorLogs();
+        Map<String,Set<Integer>> qtdLogs = log.getTranspondersPorLogs();
+        Map<String, Integer> qtdPedido = new HashMap<String, Integer>();
+        
+        ArrayList<Integer> T = log.getTranspondersBD();
+        
+        
+        
+        for (String l :  log.getLogs()) {
+        	    Set<Integer> Transponders = log.getTranspondersPorLogs().get(l);
+        	    int i=0;
+        	    int pos = -1;
+		        for (Integer t : Transponders) {
+		        	if(pos != -1  && pos < T.size()) {
+		        		Integer km = T.get(pos);
+		        		if(!km.equals(t) && !Transponders.contains(km)) {
+		        			i++;
+		        		}
+		        	}
+		        	pos =  T.indexOf(t)+1;
+		        }
+		        qtdPedido.put(l,i);
+		      }
+        
+        
         while (modeloTable.getRowCount() > 0) {
             modeloTable.removeRow(0);
         }
         
         if(log != null){
-	        for (String t : log.getLogs()) {
+	        for (String logNome : log.getLogs()) {
 	        	// "ERRO (Metros)", "LINHA", "DATA LEITURA", "Kph", "NOME DO LOG"
 	        	
 
-	         modeloTable.addRow(new Object[] { t,
-	        		 						   qtd.get(t)
+	         modeloTable.addRow(new Object[] { logNome,		
+					   						   qtdLogs.get(logNome).size(),
+	        		 						   qtdLeitura.get(logNome),
+	        		 						  qtdPedido.get(logNome)
 			                                 });
 
 	      }

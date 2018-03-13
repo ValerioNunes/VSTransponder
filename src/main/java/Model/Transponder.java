@@ -1,6 +1,6 @@
 package Model;
 
-import java.time.LocalDateTime;
+import java.util.Date;
 
 public class Transponder {
 	
@@ -14,7 +14,7 @@ public class Transponder {
  double g1,g2,g3,g4;
  String Tipo;
  int Linha;
- LocalDateTime data;
+ Date data;
  public String Data;
  
 public Transponder(String log, int linha, String texto) {
@@ -117,7 +117,7 @@ private void  Kph(String texto) {
 
 
 
-public void setData(LocalDateTime data) {
+public void setData(Date data) {
 	this.data = data;
 }
 
@@ -170,7 +170,7 @@ public String getTipo() {
 public int getLinha1() {
 	return Linha;
 }
-public LocalDateTime getData() {
+public Date getData() {
 	return data;
 }
  

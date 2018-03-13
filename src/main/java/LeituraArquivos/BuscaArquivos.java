@@ -4,8 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.BasicFileAttributes;
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
@@ -20,9 +19,11 @@ import javax.swing.JFileChooser;
 import javax.swing.JOptionPane;
 import javax.swing.filechooser.FileNameExtensionFilter;
 
+import Dao.DaoTransponder;
 import Model.Logs;
 import Model.Momento;
 import Model.Transponder;
+import Model.TransponderBD;
 
 
 public class BuscaArquivos {
@@ -30,6 +31,8 @@ public class BuscaArquivos {
 	private ArrayList<Transponder> Transponders;	
 	private Momento  Datas;
 	private Logs Log =  new Logs();
+	DaoTransponder DaoTrans =  new DaoTransponder();
+	
 	
  public Logs BuscarArquivo(){
 	 
@@ -45,19 +48,26 @@ public class BuscaArquivos {
 	    if(returnVal == JFileChooser.APPROVE_OPTION) {
 	    	
 	    	LerTXT(chooser.getSelectedFile().getAbsolutePath());
+	    	gerarLog();
 	    	
 	    }else{
-	  
+	    		return null;
 	    }
 	    
 	   
-	    gerarLog();
+	 
 	    
 	   return this.Log;
 	}
 
  
 private void gerarLog() {
+	
+	Set<Integer> kmTransBD = new HashSet <Integer>();
+	ArrayList<TransponderBD> TransBD = new ArrayList<TransponderBD>();
+	Map<String,Set<Integer>> TranspondersPorLogs = new HashMap<String,Set<Integer>>();
+	
+	
 	
 	Set <String>  trans = new  HashSet <String>();
 	Set <String>  tipotrans = new  HashSet <String>();
@@ -66,16 +76,16 @@ private void gerarLog() {
 	
 	Map<String,ArrayList<Transponder>> KeyTransponders = new HashMap<String,ArrayList<Transponder>>();
 	
-    Integer TotalLeituras = 0;	
+  
 	for (Transponder t : Transponders) {
 		
 		int KM = t.getKM();
+		
 		String KMTipo = (new Integer(KM)+" - "+t.getTipo());
 		String log =  t.getLog();
 		trans.add(KMTipo);
 		tipotrans.add(t.getTipo());
 		t.setData(Datas.getData(t));
-		
 		
 		if(QuantidadeLeituras.get(KMTipo) != null) {
 			
@@ -92,6 +102,11 @@ private void gerarLog() {
 			 keyTrans.add(t);
 			KeyTransponders.put(KMTipo,keyTrans);
 			
+			TransponderBD Tdb = new TransponderBD();
+			 Tdb.setKm(KM);
+			 Tdb.setTipo(t.getTipo());
+			 Tdb.setKey(KMTipo);
+			TransBD.add(Tdb);
 		}
 		
 		if(QuantidadeLeiturasPorLogs.get(log) != null) {
@@ -101,15 +116,36 @@ private void gerarLog() {
 			QuantidadeLeiturasPorLogs.put(log, 1);
 		}
 		
-	}
-		   List TranspodersLidos = new ArrayList(trans); 
+		if(TranspondersPorLogs.get(log) != null) {
+			Set<Integer> km = TranspondersPorLogs.get(log);
+			km.add(KM);
+			TranspondersPorLogs.put(log, km);
+		}else{
+			Set<Integer> km = new HashSet<Integer>();
+			km.add(KM);
+			TranspondersPorLogs.put(log, km);
+		}
+	}	   List TranspodersLidos = new ArrayList(trans); 
 		   Collections.sort(TranspodersLidos);
+		   
+		   this.Log.setNewTranspoderBDs(DaoTrans.salvar(TransBD));
+		   this.Log.setTranspoderTodosBDs(DaoTrans.getTodosTransposnders());
 		   this.Log.setQuantidadeLeiturasPorLogs(QuantidadeLeiturasPorLogs);
 		   this.Log.setTipoTransponders(tipotrans);
 		   this.Log.setQuantidadeLeituras(QuantidadeLeituras);
 		   this.Log.setTranspoders(Transponders);
 		   this.Log.setTranspodersLidos(TranspodersLidos);
 		   this.Log.setKeyTransponders(KeyTransponders);
+		   this.Log.setTranspondersPorLogs(TranspondersPorLogs);
+		   DaoTrans.Close();
+		   
+		   for(TransponderBD t : this.Log.getTranspoderTodosBDs())
+			   	kmTransBD.add(t.getKm());
+		   
+		    ArrayList TranspodersLidos2 = new ArrayList(kmTransBD); 
+			Collections.sort(TranspodersLidos2);
+			this.Log.setTranspondersBD(TranspodersLidos2);
+			
 }
  
  	void LerTXT(String local){
@@ -129,6 +165,8 @@ private void gerarLog() {
 	        	}
 	        }
 	    this.Log.setLogs(Log);
+	
+	    
  	}
  
  	
@@ -143,6 +181,7 @@ private void gerarLog() {
 	}
 	
 	void Ler(File nome) {
+		
 		    try {
 		    	
 		      BufferedReader lerArq = new BufferedReader(new FileReader(nome));

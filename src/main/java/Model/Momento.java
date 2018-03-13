@@ -1,12 +1,15 @@
 package Model;
 
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+
+import javax.swing.text.DateFormatter;
 
 public class Momento {
 	String texto;
@@ -34,8 +37,8 @@ public class Momento {
 		//System.out.println(data);
 	}
 	
-	public LocalDateTime getData(Transponder t) {
-		LocalDateTime dateTime = null;
+	public Date getData(Transponder t) {
+		Date dateTime = null;
 		 ArrayList<String> D =  (ArrayList<String>) Log.get(t.log);
 	   
 	      String Anterior = null;
@@ -48,14 +51,25 @@ public class Momento {
 	    		 
 	    		 if(!data.equals("00/00/00")){
 	    			 String str = t.Data+" "+data;
-	    			 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS MM/dd/yy");
-	    			 dateTime = LocalDateTime.parse(str, formatter);
-	    			
+
+	    			 
+	    			 SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SS MM/dd/yy");
+	    			 try {
+						dateTime =  dataMenosDias(new java.sql.Date(format.parse(str).getTime()),0);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
 	    			  
 	    		 }else {
 	    			 String str = t.Data+" "+Anterior;
-	    			 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS MM/dd/yy");
-	    			 dateTime = LocalDateTime.parse(str, formatter).minusDays(1);	
+	       			 SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SS MM/dd/yy");
+	    			 try {
+						dateTime =  dataMenosDias(new java.sql.Date(format.parse(str).getTime()),1);
+					} catch (ParseException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} 
 	    		 }
 	    		 
 	    		 return  dateTime;
@@ -65,13 +79,29 @@ public class Momento {
 	    	}
 	      
 	         String str = t.Data+" "+Anterior;
-			 DateTimeFormatter formatter = DateTimeFormatter.ofPattern("HH:mm:ss.SS MM/dd/yy");
-			 dateTime = LocalDateTime.parse(str, formatter).minusDays(1);	
+   			 SimpleDateFormat format = new SimpleDateFormat("HH:mm:ss.SS MM/dd/yy");
+			 try {
+				dateTime =  dataMenosDias(new java.sql.Date(format.parse(str).getTime()),1);
+			} catch (ParseException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} 
+			 
+
 			 
 		return  dateTime;
 	}
 	
 	
+	
+	private Date dataMenosDias(Date data, int dias) {
+		
+		 Calendar cal = Calendar.getInstance();
+		 cal.setTime(data);
+		 cal.add(Calendar.DATE, -dias);
+		 return cal.getTime();
+		
+	}
 
 	public Map<String, Object> getLog() {
 		return Log;
