@@ -20,6 +20,7 @@ import javax.swing.table.DefaultTableModel;
 import LeituraArquivos.BuscaArquivos;
 import Model.Logs;
 import Model.Transponder;
+import Model.TransponderBD;
 import View.TabInfoLog;
 import View.TabInfoTranspoder;
 import img.logo;
@@ -41,6 +42,7 @@ import javax.swing.JCheckBox;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.event.ChangeListener;
+import javax.swing.plaf.basic.BasicInternalFrameTitlePane.MaximizeAction;
 import javax.swing.event.ChangeEvent;
 import javax.swing.border.MatteBorder;
 import java.awt.Color;
@@ -54,6 +56,8 @@ import com.jgoodies.forms.layout.RowSpec;
 
 import DB.DataBase;
 import DB.Pastas;
+import Dao.DaoTransponder;
+
 import javax.swing.ImageIcon;
 
 public class VSTransponder {
@@ -94,6 +98,15 @@ public class VSTransponder {
 	/**
 	 * Launch the application.
 	 */
+	
+	DaoTransponder daoTransponder = new DaoTransponder();
+	private JPanel panel_6;
+	private JPanel panel_7;
+	private JPanel panel_8;
+	private JCheckBox StatusMinErro;
+	private JLabel lblNMdiaDe;
+	private JTextField MinErro;
+	
 	public static void main(String[] args) {
 	
 		
@@ -159,11 +172,11 @@ public class VSTransponder {
 			new Object[][] {
 			},
 			new String[] {
-				"KM", "TIPO DE TRANSPONDER", "QUANTIDADE DE LEITURAS"
+				"KM", "TIPO DE TRANSPONDER", "QUANTIDADE DE LEITURAS","Média de Erro (Metros)"
 			}
 		) {
 			boolean[] columnEditables = new boolean[] {
-				false, false, false
+				false, false, false,false
 			};
 			public boolean isCellEditable(int row, int column) {
 				return columnEditables[column];
@@ -222,52 +235,61 @@ public class VSTransponder {
 		
 		panel_1 = new JPanel();
 		panel_4.add(panel_1, BorderLayout.SOUTH);
-		panel_1.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		
-		panel_3 = new JPanel();
-		panel_3.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
-		panel_1.add(panel_3);
-		StatusKM = new JCheckBox("");
-		StatusKM.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent arg0) {
-				FiltroKm.setEditable(StatusKM.isSelected());
-				KmPeriodo.setEditable(StatusKM.isSelected());
-			}
-		});
-		panel_3.add(StatusKM);
-		
-		lblKm = new JLabel("KM:");
-		panel_3.add(lblKm);
-		
-		FiltroKm = new JTextField();
-		FiltroKm.setEditable(false);
-		FiltroKm.setColumns(5);
-		panel_3.add(FiltroKm);
-		
-		lblPerodometros = new JLabel("Periodo (Metros):");
-		panel_3.add(lblPerodometros);
-		
-		KmPeriodo = new JTextField();
-		KmPeriodo.setEditable(false);
-		KmPeriodo.setColumns(5);
-		panel_3.add(KmPeriodo);
-		lblTipo = new JLabel("Tipo de Transponder: ");
-		panel_1.add(lblTipo);
-		
-		TipoTransponder = new JComboBox();
-		
-
-				panel_1.add(TipoTransponder);
+		panel_1.setLayout(new BorderLayout(0, 0));
+				
+				panel_6 = new JPanel();
+				panel_6.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
+				panel_1.add(panel_6, BorderLayout.NORTH);
+				lblTipo = new JLabel("Tipo de Transponder: ");
+				panel_6.add(lblTipo);
+				
+				TipoTransponder = new JComboBox();
+				panel_6.add(TipoTransponder);
+				TipoTransponder.addItem("TODOS");
+				
+				panel_3 = new JPanel();
+				panel_6.add(panel_3);
+				panel_3.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
+				StatusKM = new JCheckBox("");
+				StatusKM.addChangeListener(new ChangeListener() {
+					public void stateChanged(ChangeEvent arg0) {
+						FiltroKm.setEditable(StatusKM.isSelected());
+						KmPeriodo.setEditable(StatusKM.isSelected());
+						if(!StatusKM.isSelected()) PesquisarTrans();
+					}
+				});
+				panel_3.add(StatusKM);
+				
+				lblKm = new JLabel("KM:");
+				panel_3.add(lblKm);
+				
+				FiltroKm = new JTextField();
+				FiltroKm.setEditable(false);
+				FiltroKm.setColumns(5);
+				panel_3.add(FiltroKm);
+				
+				lblPerodometros = new JLabel("Periodo (Metros):");
+				panel_3.add(lblPerodometros);
+				
+				KmPeriodo = new JTextField();
+				KmPeriodo.setEditable(false);
+				KmPeriodo.setColumns(5);
+				panel_3.add(KmPeriodo);
+				
+				panel_7 = new JPanel();
+				panel_1.add(panel_7, BorderLayout.CENTER);
 				
 				panel_2 = new JPanel();
+				panel_7.add(panel_2);
 				panel_2.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
-				panel_1.add(panel_2);
 				
 				StatusMinLeitura = new JCheckBox("");
 				StatusMinLeitura.addChangeListener(new ChangeListener() {
 					public void stateChanged(ChangeEvent arg0) {
 						NumMinLeitura.setEditable(StatusMinLeitura.isSelected());
+						if(!StatusMinLeitura.isSelected()) PesquisarTrans();
 					}
+					
 				});
 				panel_2.add(StatusMinLeitura);
 				
@@ -279,9 +301,31 @@ public class VSTransponder {
 				panel_2.add(NumMinLeitura);
 				NumMinLeitura.setColumns(3);
 				
+				panel_8 = new JPanel();
+				panel_8.setBorder(new MatteBorder(1, 1, 1, 1, (Color) new Color(0, 0, 0)));
+				panel_7.add(panel_8);
+				
+				StatusMinErro = new JCheckBox("");
+				StatusMinErro.addChangeListener(new ChangeListener() {
+					public void stateChanged(ChangeEvent arg0) {
+						MinErro.setEditable(StatusMinErro.isSelected());
+						if(!StatusMinErro.isSelected()) PesquisarTrans();
+					}
+				});
+				panel_8.add(StatusMinErro);
+				
+				lblNMdiaDe = new JLabel("N\u00BA M\u00E9dia de Erro:");
+				panel_8.add(lblNMdiaDe);
+				
+				MinErro = new JTextField();
+				MinErro.setEditable(false);
+				MinErro.setColumns(3);
+				panel_8.add(MinErro);
+				
 
 				
 				btnBuscar = new JButton("Buscar");
+				panel_7.add(btnBuscar);
 				btnBuscar.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
 						
@@ -290,7 +334,8 @@ public class VSTransponder {
 					}
 
 				});
-				panel_1.add(btnBuscar);
+				
+
 				
 				TipoTransponder.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent arg0) {
@@ -310,34 +355,34 @@ public class VSTransponder {
 				tbLogs = new JTable();
 				tbLogs.setModel(new DefaultTableModel(
 					new Object[][] {
-						{null, null, null},
 					},
 					new String[] {
-						"Nome do Log", "N\u00FAmero de Transponders", "Quantidade Leituras","Possível Perda"
+						"Log","Loco","N\u00FAmero de Transponders", "Quantidade Leituras","Possível Perda"
 					}
 				) {
 					boolean[] columnEditables = new boolean[] {
-						false, false, false
+						false, false, false,false
 					};
 					public boolean isCellEditable(int row, int column) {
 						return columnEditables[column];
 					}
 				});
-				tbLogs.getColumnModel().getColumn(0).setPreferredWidth(87);
-				tbLogs.getColumnModel().getColumn(1).setPreferredWidth(123);
 				tbLogs.addMouseListener(new MouseAdapter() {
 					@Override
 					public void mouseClicked(MouseEvent arg0) {
-						String log = tbLogs.getValueAt(tbLogs.getSelectedRow(), 0).toString();
 						
-						try {
-							TabInfoLog dialog =  new TabInfoLog(LOG, log);
-							dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-							dialog.setVisible(true);
-						} catch (Exception e) {
-							e.printStackTrace();
+						String log = tbLogs.getValueAt(tbLogs.getSelectedRow(), 0).toString();
+						if(LOG != null) {
+							try {
+								TabInfoLog dialog =  new TabInfoLog(LOG, log);
+								dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+								dialog.setVisible(true);
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 						}
 					}
+					
 				});
 				scrollPane_1.setViewportView(tbLogs);
 				
@@ -361,20 +406,42 @@ public class VSTransponder {
 						NumLogs.setText(String.valueOf(numlogs));
 						TipoTransponder.removeAllItems();
 						TipoTransponder.addItem("TODOS");
-						for(String tipo : LOG.getTipoTransponders()) {
-							TipoTransponder.addItem(tipo);
-						}
+						
+						daoTransponder = new DaoTransponder();
+						
+							ArrayList<String> c = new ArrayList<String>();
+							for(TransponderBD t :  daoTransponder.getTodosTransposnders()){
+								String tipo = t.getTipo();
+								if(!c.contains(tipo))
+									TipoTransponder.addItem(tipo);
+								c.add(tipo);
+							}
+						
+						daoTransponder.Close();
 						
 						PesquisarTrans();
 						setTbLogs(LOG);
-						int numNovostransponders =  LOG.getNewTranspoderBDs().size();
+						int numNovostransponders = 0;
+						if(LOG.getNewTranspoderBDs() != null)
+							numNovostransponders =  LOG.getNewTranspoderBDs().size();
 						JOptionPane.showMessageDialog(null, numNovostransponders + " Transponder(s) Novos Encontrados.");
 				}
 			}
 		});
 		mnNewMenu.add(mntmImportarLogs);
+		
 
-	
+		ArrayList<String> c = new ArrayList<String>();
+		
+		for(TransponderBD t :  daoTransponder.getTodosTransposnders()){
+			String tipo = t.getTipo();
+			if(!c.contains(tipo))
+				TipoTransponder.addItem(tipo);
+			c.add(tipo);
+		}
+		daoTransponder.Close();
+		setTbTransponder (null);
+
 	}
 	private Boolean isNumero(String texto) {
 		
@@ -391,9 +458,12 @@ public class VSTransponder {
 	private void openInfoTranspoder(Logs logs, String keyTrans) {
 		
 		try {
-			TabInfoTranspoder dialog = new TabInfoTranspoder(logs, keyTrans);
-			dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
-			dialog.setVisible(true);
+			if(logs != null) {
+				TabInfoTranspoder dialog = new TabInfoTranspoder(logs, keyTrans);
+				dialog.setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+				dialog.setVisible(true);
+			}
+			
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -417,38 +487,46 @@ public class VSTransponder {
 			 setTbTransponder (LOG);
 		}else {
 	          JOptionPane.showMessageDialog(null, "Número do Filtro  Inválido");
-	  	
 		}
+		
 	}
 	
 	private void   setTbTransponder (Logs logs) {
 
 		int numLeituras = 0;
 		int numTrans = 0;
-		int leituras;
+		Integer leituras = 0;
 		
 		
+		
+	
         DefaultTableModel modeloTable = (DefaultTableModel) tbTransponder.getModel();
-        Map<String,Integer> QuantidadeLeituras = logs.getQuantidadeLeituras();
+        
         
         while (modeloTable.getRowCount() > 0) {
             modeloTable.removeRow(0);
         }
         
- 
-        
-        
-        if(logs != null){
-	        for (String t : logs.getTranspodersLidos()) {
-			         String trans[] = t.split(" - ");
+  
+            daoTransponder = new DaoTransponder();
+	        for (TransponderBD t : daoTransponder.getTodosTransposnders() ) {
+	        
+	                 int qtd  = 0;
+	                 int erro = 0;
+	                 
+			         
 			         String tipo = (String) TipoTransponder.getSelectedItem();
-			         int qtd = QuantidadeLeituras.get(t);
+			         
+			         
 			         String numMinLeitura = NumMinLeitura.getText();
+			         String minErroString = MinErro.getText();
 			         int minQtd = 0;
 			         int  minKM = 0;
 			         int  maxKm = 0;
+			         int  minErro = 0;
 			         
-			         int KM = Integer.valueOf(trans[0]);
+			         int KM = t.getKm();
+			         
 			         if(StatusKM.isSelected()) {
 				 		 int  FKm = Integer.valueOf(FiltroKm.getText());
 					     int  PKm = Integer.valueOf(KmPeriodo.getText());	
@@ -457,25 +535,58 @@ public class VSTransponder {
 			         }
 			         if(StatusMinLeitura.isSelected())
 			        	 minQtd = Integer.valueOf(numMinLeitura);
+			         if(StatusMinErro.isSelected())
+			        	 minErro = Integer.valueOf(minErroString);
 			         
-			         if((tipo.equals("TODOS") || trans[1].equals(tipo)) && 
+			         
+	                 if(logs != null) {
+	                	 if(logs.getQuantidadeLeituras().get(t.getKey()) != null)
+	                		 qtd =  logs.getQuantidadeLeituras().get(t.getKey());
+	                	 
+	                	 if(logs.getQuantidadeErros().get(t.getKey()) != null)
+	                		 erro = logs.getQuantidadeErros().get(t.getKey());
+	                 }
+	                 int MediaErro =  MediaErros(erro,qtd);
+			         if((tipo.equals("TODOS") || t.getTipo().equals(tipo)) && 
 			            (!StatusMinLeitura.isSelected() || ( qtd <= minQtd ))&&
+			            (!StatusMinErro.isSelected() || (  Math.abs(MediaErro) >= minErro ))&&
 			            (!StatusKM.isSelected() || ((KM>=minKM)&&(KM<=maxKm)))){
-			        	         leituras =  QuantidadeLeituras.get(t);
+			        	 
+			        	 leituras = 0;
+			        	 
+			        	 if(logs !=  null) {
+			        	         leituras    = qtd;
+			        	         numLeituras =  numLeituras + leituras;
+			        	 }
 			        	 		 numTrans++;
-			        	 		 numLeituras =  numLeituras + leituras;
-			        	 	
-						         modeloTable.addRow(new Object[] { trans[0],
-						        		                           trans[1],
-						        		                          leituras
+			        	 		 
+						         modeloTable.addRow(new Object[] { t.getKm(),
+						        		                           t.getTipo(),
+						        		                           leituras,
+						        		                           MediaErros(erro,leituras)
 								                                 });
 			         }
-
-	      }
+	  
         }
         NumTrans.setText(String.valueOf(numTrans));
     	NumLeitura.setText(String.valueOf(numLeituras));
+    	daoTransponder.Close();
     }
+	
+	private int MediaErros(int erro , int qtd) {
+		if(qtd == 0 )
+			return 0;
+		return erro/qtd;
+	}
+	
+	
+	private String locomotiva(String nomeLog) {
+		
+		if(nomeLog.indexOf('0') == 0)
+			return nomeLog.substring(1, 4);
+		else
+			return nomeLog.substring(0, 4);
+	}
 	
 	private void   setTbLogs(Logs log) {
 
@@ -516,10 +627,11 @@ public class VSTransponder {
 	        	// "ERRO (Metros)", "LINHA", "DATA LEITURA", "Kph", "NOME DO LOG"
 	        	
 
-	         modeloTable.addRow(new Object[] { logNome,		
+	         modeloTable.addRow(new Object[] { logNome,
+	        		 							locomotiva(logNome),		
 					   						   qtdLogs.get(logNome).size(),
 	        		 						   qtdLeitura.get(logNome),
-	        		 						  qtdPedido.get(logNome)
+	        		 						   qtdPedido.get(logNome)
 			                                 });
 
 	      }

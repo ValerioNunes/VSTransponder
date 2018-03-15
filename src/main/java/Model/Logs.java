@@ -19,8 +19,17 @@ public class Logs {
 	Map<String,ArrayList<Transponder>> KeyTransponders = new HashMap<String,ArrayList<Transponder>>();
 	Map<String,Integer> QuantidadeLeiturasPorLogs = new HashMap<String,Integer>();
 	Map<String,Set<Integer>> TranspondersPorLogs = new HashMap<String,Set<Integer>>();
+	Map<String,Integer> QuantidadeErros = new HashMap<String,Integer>();
 
+	
+	
+	public Map<String, Integer> getQuantidadeErros() {
+		return QuantidadeErros;
+	}
 
+	public void setQuantidadeErros(Map<String, Integer> quantidadeErros) {
+		QuantidadeErros = quantidadeErros;
+	}
 
 	public ArrayList<Integer> getTranspondersBD() {
 		return TranspondersBD;

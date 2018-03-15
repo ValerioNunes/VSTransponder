@@ -31,7 +31,7 @@ public class BuscaArquivos {
 	private ArrayList<Transponder> Transponders;	
 	private Momento  Datas;
 	private Logs Log =  new Logs();
-	DaoTransponder DaoTrans =  new DaoTransponder();
+	DaoTransponder DaoTrans;
 	
 	
  public Logs BuscarArquivo(){
@@ -54,9 +54,6 @@ public class BuscaArquivos {
 	    		return null;
 	    }
 	    
-	   
-	 
-	    
 	   return this.Log;
 	}
 
@@ -72,7 +69,10 @@ private void gerarLog() {
 	Set <String>  trans = new  HashSet <String>();
 	Set <String>  tipotrans = new  HashSet <String>();
 	Map<String,Integer> QuantidadeLeituras = new HashMap<String,Integer>();
+	Map<String,Integer> QuantidadeErros = new HashMap<String,Integer>();
+	
 	Map<String,Integer> QuantidadeLeiturasPorLogs = new HashMap<String,Integer>();
+	
 	
 	Map<String,ArrayList<Transponder>> KeyTransponders = new HashMap<String,ArrayList<Transponder>>();
 	
@@ -95,7 +95,8 @@ private void gerarLog() {
 			ArrayList<Transponder> keyTrans = KeyTransponders.get(KMTipo);
 			 keyTrans.add(t);
 			KeyTransponders.put(KMTipo,keyTrans);
-			
+			Integer err = QuantidadeErros.get(KMTipo) + t.getErro();
+			QuantidadeErros.put(KMTipo, err);
 		}else{
 			QuantidadeLeituras.put(KMTipo,1);
 			ArrayList<Transponder> keyTrans = new ArrayList<Transponder>();
@@ -107,13 +108,19 @@ private void gerarLog() {
 			 Tdb.setTipo(t.getTipo());
 			 Tdb.setKey(KMTipo);
 			TransBD.add(Tdb);
+			
+			QuantidadeErros.put(KMTipo,t.getErro());
 		}
 		
 		if(QuantidadeLeiturasPorLogs.get(log) != null) {
 			Integer qtd = QuantidadeLeiturasPorLogs.get(log) +1;
 			QuantidadeLeiturasPorLogs.put(log, qtd);
+			
+	
+			
 		}else{
 			QuantidadeLeiturasPorLogs.put(log, 1);
+			
 		}
 		
 		if(TranspondersPorLogs.get(log) != null) {
@@ -125,9 +132,10 @@ private void gerarLog() {
 			km.add(KM);
 			TranspondersPorLogs.put(log, km);
 		}
+		
 	}	   List TranspodersLidos = new ArrayList(trans); 
 		   Collections.sort(TranspodersLidos);
-		   
+		   DaoTrans =  new DaoTransponder();
 		   this.Log.setNewTranspoderBDs(DaoTrans.salvar(TransBD));
 		   this.Log.setTranspoderTodosBDs(DaoTrans.getTodosTransposnders());
 		   this.Log.setQuantidadeLeiturasPorLogs(QuantidadeLeiturasPorLogs);
@@ -137,6 +145,7 @@ private void gerarLog() {
 		   this.Log.setTranspodersLidos(TranspodersLidos);
 		   this.Log.setKeyTransponders(KeyTransponders);
 		   this.Log.setTranspondersPorLogs(TranspondersPorLogs);
+		   this.Log.setQuantidadeErros(QuantidadeErros);
 		   DaoTrans.Close();
 		   
 		   for(TransponderBD t : this.Log.getTranspoderTodosBDs())
